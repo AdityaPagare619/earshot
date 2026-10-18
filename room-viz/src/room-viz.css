@@ -1,0 +1,181 @@
+/* EARSHOT room-viz tokens + styles.
+ * PLACEHOLDER tokens: semantic names (--esh-*). When ui-inspiration's TOKENS.md
+ * merges, rename in the :root block below per README's rename map — one block.
+ */
+.esh-roomviz {
+  /* ---- palette: near-black AMOLED, glowing accents ---- */
+  --esh-bg: #05070a;
+  --esh-wall: rgba(150, 190, 255, 0.16);
+  --esh-wall-soft: rgba(150, 190, 255, 0.07);
+  --esh-label: rgba(198, 218, 255, 0.52);
+  --esh-avatar-disc: #0b1424;
+  --esh-avatar-ink: #eaf3ff;
+  /* ---- disclosure-level semantics (the contract with MASTER_PLAN §5) ---- */
+  --esh-level-full: #2fe8a4;        /* FULL      — emerald: open, private room   */
+  --esh-level-abstract: #ffb03a;    /* ABSTRACT  — gold: softened                 */
+  --esh-level-existence: #ff5f3c;   /* EXISTENCE — ember: restricted             */
+  --esh-level-silent: #ff2e63;      /* SILENT    — crimson: sealed (double ring) */
+  --esh-level-unknown: #8b7bff;     /* UNKNOWN   — violet: fail-closed, sampling */
+  --esh-active: var(--esh-level-unknown);
+
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--esh-bg);
+  border-radius: 14px;
+  overflow: hidden;
+  font-family: "Inter", "SF Pro Display", system-ui, sans-serif;
+  user-select: none;
+}
+.esh-roomviz .esh-svg { width: 100%; height: 100%; display: block; }
+
+/* faint blueprint grid */
+.esh-roomviz .esh-grid line {
+  stroke: rgba(150, 190, 255, 0.05);
+  stroke-width: 1;
+}
+
+/* rooms */
+.esh-roomviz .esh-room-fill {
+  fill: rgba(20, 34, 58, 0.28);
+  stroke: var(--esh-wall);
+  stroke-width: 1.5;
+}
+.esh-roomviz .esh-room-label {
+  fill: var(--esh-label);
+  font-size: 13px;
+  letter-spacing: 3px;
+  font-weight: 600;
+}
+
+/* disclosure border: crisp line + bloom, color = level, 400ms ease on change */
+.esh-roomviz .esh-border-line {
+  fill: none;
+  stroke: var(--esh-active);
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 10px var(--esh-active));
+  transition: stroke 0.4s ease, filter 0.4s ease;
+}
+.esh-roomviz .esh-border-bloom {
+  fill: none;
+  stroke: var(--esh-active);
+  stroke-width: 7;
+  opacity: 0.16;
+  filter: blur(6px);
+  transition: stroke 0.4s ease, opacity 0.4s ease;
+}
+.esh-roomviz .esh-border[data-level="SILENT"] .esh-border-bloom {
+  opacity: 0.34;
+}
+.esh-roomviz .esh-border[data-level="SILENT"] .esh-border-line {
+  stroke-dasharray: 14 6;
+  animation: esh-seal 2.4s linear infinite;
+}
+@keyframes esh-seal { to { stroke-dashoffset: -40; } }
+.esh-roomviz .esh-border[data-level="UNKNOWN"] .esh-border-line {
+  opacity: 0.35;
+}
+
+/* level chip */
+.esh-roomviz .esh-chip-bg {
+  fill: rgba(5, 8, 12, 0.72);
+  stroke: var(--esh-active);
+  stroke-width: 1;
+  transition: stroke 0.4s ease;
+}
+.esh-roomviz .esh-chip-text {
+  fill: var(--esh-active);
+  font-size: 11px;
+  letter-spacing: 2px;
+  font-weight: 700;
+  transition: fill 0.4s ease;
+}
+
+/* doorways + front door */
+.esh-roomviz .esh-doorway-gap {
+  stroke: var(--esh-bg);
+  stroke-width: 5;
+}
+.esh-roomviz .esh-doorway-line {
+  stroke: rgba(255, 176, 58, 0.55);
+  stroke-width: 2;
+  stroke-dasharray: 6 5;
+  filter: drop-shadow(0 0 6px rgba(255, 176, 58, 0.6));
+}
+.esh-roomviz .esh-door-notch { fill: rgba(150, 190, 255, 0.28); }
+.esh-roomviz .esh-door-label { letter-spacing: 2px; font-size: 10px; }
+
+/* Echo Show */
+.esh-roomviz .esh-echo-body {
+  fill: #101a2e;
+  stroke: rgba(150, 190, 255, 0.35);
+  stroke-width: 1.5;
+  filter: drop-shadow(0 0 8px rgba(125, 215, 255, 0.35));
+}
+.esh-roomviz .esh-echo-screen { fill: #060b16; }
+.esh-roomviz .esh-echo-bar { fill: #3a4d6e; transform-box: fill-box; transform-origin: center; }
+.esh-roomviz .esh-echo-live .esh-echo-bar {
+  fill: #7dd7ff;
+  filter: drop-shadow(0 0 4px #7dd7ff);
+  animation: esh-bar 0.5s ease-in-out infinite alternate;
+}
+.esh-roomviz .esh-echo-live .esh-echo-bar:nth-child(2) { animation-delay: 0.1s; }
+.esh-roomviz .esh-echo-live .esh-echo-bar:nth-child(3) { animation-delay: 0.2s; }
+.esh-roomviz .esh-echo-live .esh-echo-bar:nth-child(4) { animation-delay: 0.3s; }
+.esh-roomviz .esh-echo-live .esh-echo-bar:nth-child(5) { animation-delay: 0.4s; }
+@keyframes esh-bar { from { transform: scaleY(0.5); } to { transform: scaleY(1.9); } }
+
+/* avatars */
+.esh-roomviz .esh-avatar { transition: opacity 0.5s ease; }
+.esh-roomviz .esh-avatar-glow { opacity: 0.22; filter: blur(5px); }
+.esh-roomviz .esh-avatar-disc {
+  fill: var(--esh-avatar-disc);
+  stroke: rgba(234, 243, 255, 0.55);
+  stroke-width: 1.5;
+  filter: drop-shadow(0 0 9px rgba(125, 215, 255, 0.5));
+}
+.esh-roomviz .esh-avatar-ring {
+  fill: none;
+  stroke: rgba(125, 215, 255, 0.75);
+  stroke-width: 2;
+  stroke-dasharray: 129; /* 2πr, r=20.5 */
+  stroke-dashoffset: 0;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+.esh-roomviz .esh-avatar-ring.esh-lowconf {
+  stroke: #ffb03a;
+  stroke-dasharray: 8 7;
+  animation: esh-spin 6s linear infinite;
+}
+@keyframes esh-spin { to { transform: rotate(360deg); } }
+.esh-roomviz .esh-avatar-initial {
+  fill: var(--esh-avatar-ink);
+  font-size: 17px;
+  font-weight: 700;
+}
+.esh-roomviz .esh-avatar-name {
+  fill: var(--esh-label);
+  font-size: 11px;
+  letter-spacing: 2px;
+  font-weight: 600;
+}
+
+/* fx: motion trails, threshold ripples, wake-word pulses */
+.esh-roomviz .esh-trail { opacity: 0.28; filter: blur(3px); transition: opacity 0.6s ease, r 0.6s ease; }
+.esh-roomviz .esh-trail-fade { opacity: 0; }
+.esh-roomviz .esh-ripple {
+  fill: none;
+  stroke-width: 2.5;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 8px currentColor);
+  transition: r 0.8s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.8s ease;
+}
+.esh-roomviz .esh-ripple-go { r: 46; opacity: 0; }
+.esh-roomviz .esh-wake {
+  fill: none;
+  stroke-width: 2;
+  opacity: 0.85;
+  transition: r 1s cubic-bezier(0.22, 1, 0.36, 1), opacity 1s ease;
+}
+.esh-roomviz .esh-wake-go { r: 120; opacity: 0; }

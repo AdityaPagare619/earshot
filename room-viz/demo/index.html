@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EARSHOT room-viz — walk-in demo (simulated)</title>
+<link rel="stylesheet" href="../src/room-viz.css">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: #020304; color: #dfe9ff;
+    font-family: "Inter", "SF Pro Display", system-ui, sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 28px 20px 40px;
+  }
+  header { text-align: center; margin-bottom: 18px; }
+  header h1 {
+    margin: 0 0 6px; font-size: 15px; letter-spacing: 5px; font-weight: 800;
+    color: #7dd7ff; text-shadow: 0 0 18px rgba(125,215,255,.5);
+  }
+  header p { margin: 0; font-size: 12.5px; color: rgba(198,218,255,.55); letter-spacing: .4px; }
+  .sim-tag {
+    display: inline-block; margin-top: 8px; font-size: 10.5px; letter-spacing: 2px;
+    border: 1px solid rgba(255,176,58,.5); color: #ffb03a; border-radius: 999px;
+    padding: 4px 12px;
+  }
+  main { display: flex; gap: 22px; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+  #stage { width: min(680px, 92vw); }
+  .panel {
+    width: 300px; background: rgba(10,16,28,.85); border: 1px solid rgba(150,190,255,.12);
+    border-radius: 14px; padding: 16px;
+  }
+  .panel h2 { margin: 0 0 10px; font-size: 11px; letter-spacing: 3px; color: rgba(198,218,255,.6); }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  button {
+    background: #0d1626; color: #cfe2ff; border: 1px solid rgba(125,215,255,.35);
+    border-radius: 9px; padding: 8px 12px; font-size: 12px; letter-spacing: .5px;
+    cursor: pointer; transition: all .15s ease;
+  }
+  button:hover { border-color: #7dd7ff; box-shadow: 0 0 12px rgba(125,215,255,.35); }
+  button.primary { border-color: #2fe8a4; color: #2fe8a4; font-weight: 700; }
+  button.primary:hover { box-shadow: 0 0 14px rgba(47,232,164,.4); }
+  #buslog { max-height: 300px; overflow: hidden; }
+  .bus-row {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10.5px;
+    padding: 6px 8px; border-left: 2px solid #7dd7ff; background: rgba(20,32,54,.5);
+    border-radius: 0 8px 8px 0; margin-bottom: 6px; word-break: break-all;
+  }
+  .bus-t { color: #8b7bff; margin-right: 8px; }
+  .bus-type { color: #7dd7ff; margin-right: 8px; font-weight: 700; }
+  .bus-d { color: rgba(223,233,255,.75); }
+  .legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px; }
+  .legend div { font-size: 11px; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+  .sw { width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 8px currentColor; background: currentColor; }
+  footer { margin-top: 26px; font-size: 11px; color: rgba(198,218,255,.35); letter-spacing: .5px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>EARSHOT · ROOM-VIZ</h1>
+  <p>Live floor-plan · the Priya household · LEFT pane module</p>
+  <span class="sim-tag">SIMULATED PRESENCE — DEMO HARNESS</span>
+</header>
+<main>
+  <div id="stage"></div>
+  <div class="panel">
+    <h2>SCENARIO</h2>
+    <div class="btn-row">
+      <button class="primary" id="btn-walkin">▶ Play walk-in</button>
+      <button id="btn-wake">Wake-word re-sample</button>
+    </div>
+    <h2>PRESENCE (MANUAL TOGGLE)</h2>
+    <div class="btn-row">
+      <button data-pres="Priya">Priya ⇄</button>
+      <button data-pres="Arjun">Arjun ⇄</button>
+      <button data-pres="MIL">MIL ⇄</button>
+    </div>
+    <h2>DISCLOSURE — KITCHEN</h2>
+    <div class="btn-row">
+      <button data-lvl="FULL">FULL</button>
+      <button data-lvl="ABSTRACT">ABSTRACT</button>
+      <button data-lvl="EXISTENCE">EXISTENCE</button>
+      <button data-lvl="SILENT">SILENT</button>
+    </div>
+    <h2>LEVEL LEGEND</h2>
+    <div class="legend">
+      <div><span class="sw" style="color:#2fe8a4"></span>FULL</div>
+      <div><span class="sw" style="color:#ffb03a"></span>ABSTRACT</div>
+      <div><span class="sw" style="color:#ff5f3c"></span>EXISTENCE</div>
+      <div><span class="sw" style="color:#ff2e63"></span>SILENT</div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>EVENT BUS (LIVE)</h2>
+    <div id="buslog"></div>
+  </div>
+</main>
+<footer>room-viz lane · contract in README.md · tokens adopt ui-inspiration TOKENS.md on merge</footer>
+
+<script src="../src/room-viz.js"></script>
+<script src="mock-bus.js"></script>
+<script src="scenario.js"></script>
+<script>
+  (function () {
+    var bus = new MockBus(document.getElementById('buslog'));
+    var viz = new RoomViz({ el: document.getElementById('stage'), bus: bus });
+    window.__viz = viz; window.__bus = bus;
+
+    document.getElementById('btn-walkin').onclick = function () { playWalkIn(bus); };
+    document.getElementById('btn-wake').onclick = function () {
+      bus.emit('earshot:wakeword', { ts: Date.now() });
+    };
+    document.querySelectorAll('[data-pres]').forEach(function (b) {
+      b.onclick = function () {
+        var name = b.getAttribute('data-pres');
+        var cur = viz.presenceOf(name);
+        if (cur && cur.room) bus.emit('earshot:presence', { person: name, room: null, confidence: 1 });
+        else bus.emit('earshot:presence', { person: name, room: name === 'MIL' ? 'kitchen' : 'living', confidence: 0.9 });
+      };
+    });
+    document.querySelectorAll('[data-lvl]').forEach(function (b) {
+      b.onclick = function () {
+        bus.emit('earshot:disclosure', { room: 'kitchen', level: b.getAttribute('data-lvl') });
+      };
+    });
+    if (new URLSearchParams(location.search).get('autoplay') === '1') playWalkIn(bus);
+  })();
+</script>
+</body>
+</html>

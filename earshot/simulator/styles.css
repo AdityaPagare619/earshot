@@ -6,34 +6,23 @@
    ════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* TOKEN-MAP: --es-bg → ui-inspiration canvas/background token */
-  --es-bg: #05070a;
-  /* TOKEN-MAP: --es-panel → pane surface token */
-  --es-panel: #0b0e13;
-  /* TOKEN-MAP: --es-panel-edge → pane border token */
-  --es-panel-edge: #1b2230;
-  /* TOKEN-MAP: --es-text → primary text token */
-  --es-text: #e8eef7;
-  /* TOKEN-MAP: --es-text-dim → secondary text token */
-  --es-text-dim: #8b95a7;
-  /* TOKEN-MAP: --es-accent → primary glow accent token (cyan-ish) */
-  --es-accent: #38e1ff;
-  /* TOKEN-MAP: --es-accent-2 → secondary glow accent token (amber, caution/walk-in) */
-  --es-accent-2: #ffb347;
-  /* TOKEN-MAP: --es-good → safe/FULL state token (green) */
-  --es-good: #3ddc84;
-  /* TOKEN-MAP: --es-bad → restricted/SILENT state token (red) */
-  --es-bad: #ff5d5d;
-  /* TOKEN-MAP: --es-warn → caution/EXISTENCE state token */
-  --es-warn: #ffb347;
-  /* TOKEN-MAP: --es-sim → "simulated" label token (violet) */
-  --es-sim: #b48cff;
-  /* TOKEN-MAP: --es-radius → corner radius token */
-  --es-radius: 10px;
-  /* TOKEN-MAP: --es-font → font stack token */
-  --es-font: "Inter", "SF Pro Display", system-ui, -apple-system, "Segoe UI", sans-serif;
-  /* TOKEN-MAP: --es-mono → monospace token */
-  --es-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Aliased to frozen earshot/ui/tokens.css v1.0.0 (coordinator integration).
+     Component-private --es-* names; every rendered value flows from --ear-*.
+     Requires tokens.css linked by the host page. */
+  --es-bg: var(--ear-canvas);
+  --es-panel: var(--ear-surface);
+  --es-panel-edge: var(--ear-line);
+  --es-text: var(--ear-text);
+  --es-text-dim: var(--ear-text-dim);
+  --es-accent: var(--ear-approve);
+  --es-accent-2: var(--ear-level-abstract);
+  --es-good: var(--ear-level-full);
+  --es-bad: var(--ear-level-silent);
+  --es-warn: var(--ear-level-existence);
+  --es-sim: var(--ear-level-existence); /* frozen violet; SIMULATED honesty badge only */
+  --es-radius: var(--ear-r-md);
+  --es-font: var(--ear-font-sans);
+  --es-mono: var(--ear-font-mono);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

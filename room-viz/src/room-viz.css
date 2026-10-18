@@ -3,19 +3,22 @@
  * merges, rename in the :root block below per README's rename map — one block.
  */
 .esh-roomviz {
-  /* ---- palette: near-black AMOLED, glowing accents ---- */
-  --esh-bg: #05070a;
-  --esh-wall: rgba(150, 190, 255, 0.16);
-  --esh-wall-soft: rgba(150, 190, 255, 0.07);
-  --esh-label: rgba(198, 218, 255, 0.52);
-  --esh-avatar-disc: #0b1424;
-  --esh-avatar-ink: #eaf3ff;
-  /* ---- disclosure-level semantics (the contract with MASTER_PLAN §5) ---- */
-  --esh-level-full: #2fe8a4;        /* FULL      — emerald: open, private room   */
-  --esh-level-abstract: #ffb03a;    /* ABSTRACT  — gold: softened                 */
-  --esh-level-existence: #ff5f3c;   /* EXISTENCE — ember: restricted             */
-  --esh-level-silent: #ff2e63;      /* SILENT    — crimson: sealed (double ring) */
-  --esh-level-unknown: #8b7bff;     /* UNKNOWN   — violet: fail-closed, sampling */
+  /* ---- palette: ALIASED to frozen earshot/ui/tokens.css v1.0.0 (coordinator
+     integration pass). Component-private --esh-* names; every rendered value
+     flows from --ear-*. Requires tokens.css linked by the host page.
+     NOTE: level hues were divergent (EXISTENCE was ember); now frozen. ---- */
+  --esh-bg: var(--ear-canvas);
+  --esh-wall: var(--ear-line);
+  --esh-wall-soft: var(--ear-line);
+  --esh-label: var(--ear-text-dim);
+  --esh-avatar-disc: var(--ear-surface-2);
+  --esh-avatar-ink: var(--ear-text);
+  /* ---- disclosure-level semantics: FROZEN hues ---- */
+  --esh-level-full: var(--ear-level-full);
+  --esh-level-abstract: var(--ear-level-abstract);
+  --esh-level-existence: var(--ear-level-existence);
+  --esh-level-silent: var(--ear-level-silent);
+  --esh-level-unknown: var(--ear-lowconf);
   --esh-active: var(--esh-level-unknown);
 
   position: relative;
@@ -24,7 +27,7 @@
   background: var(--esh-bg);
   border-radius: 14px;
   overflow: hidden;
-  font-family: "Inter", "SF Pro Display", system-ui, sans-serif;
+  font-family: var(--ear-font-sans);
   user-select: none;
 }
 .esh-roomviz .esh-svg { width: 100%; height: 100%; display: block; }

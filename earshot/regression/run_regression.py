@@ -7,6 +7,10 @@ Usage: python -m earshot.regression.run_regression
 Exit code: 0 on pass (0 leaks), 1 on any earshot leak.
 """
 import sys
+from pathlib import Path
+
+# Allow direct invocation: python earshot/regression/run_regression.py
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from earshot.regression.simulate import run, summarize
 

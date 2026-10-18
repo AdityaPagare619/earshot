@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EARSHOT — Mission Control (reference mockup a)</title>
+<!-- REFERENCE STOLEN: Lumio floor-plan — the room's glowing outline IS the disclosure-state
+     border (ref-lumio-floorplan.png); floating avatar badges over the plan (homeassistant.jpg).
+     All styling uses --ear-* tokens from tokens.css. Nothing here invents a color. -->
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--ear-canvas);
+    color: var(--ear-text);
+    font-family: var(--ear-font-sans);
+    font-size: var(--ear-fs-body);
+    line-height: 1.5;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ---- top bar ---- */
+  header {
+    display: flex; align-items: center; gap: var(--ear-s4);
+    padding: var(--ear-s3) var(--ear-s6);
+    border-bottom: 1px solid var(--ear-line);
+    background: var(--ear-surface);
+  }
+  .brand { font-size: var(--ear-fs-h2); font-weight: 700; letter-spacing: .06em; }
+  .brand em { font-style: normal; color: var(--ear-level-full); }
+  .live { display: flex; align-items: center; gap: var(--ear-s2); }
+  .live .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--ear-presence); box-shadow: var(--ear-glow-presence);
+    animation: pulse var(--ear-dur-breathe) ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  .chip {
+    font-family: var(--ear-font-mono); font-size: var(--ear-fs-micro);
+    padding: var(--ear-s1) var(--ear-s2); border: 1px solid var(--ear-line-strong);
+    border-radius: var(--ear-r-sm); color: var(--ear-text-dim);
+  }
+  .chip.sim { color: var(--ear-level-abstract); border-color: rgba(255,194,75,.35); }
+  header .spacer { flex: 1; }
+  .latency { font-family: var(--ear-font-mono); font-size: var(--ear-fs-caption); color: var(--ear-text-dim); }
+  .latency b { color: var(--ear-level-full); font-weight: 600; }
+
+  /* ---- panes ---- */
+  main {
+    flex: 1; display: grid; gap: var(--ear-gap);
+    grid-template-columns: var(--ear-layout-pane-left) 1fr var(--ear-layout-pane-right);
+    padding: var(--ear-gap); max-width: var(--ear-maxw); margin: 0 auto; width: 100%;
+    min-height: 0;
+  }
+  .pane {
+    background: var(--ear-surface); border: 1px solid var(--ear-line);
+    border-radius: var(--ear-r-lg); padding: var(--ear-s4);
+    display: flex; flex-direction: column; gap: var(--ear-s3);
+    min-height: 0; overflow: auto;
+  }
+  .pane-title { display: flex; align-items: center; justify-content: space-between; }
+
+  /* ---- room (LEFT) — the border IS the state ---- */
+  .room-plan {
+    position: relative; height: 260px; border-radius: var(--ear-r-lg);
+    background: var(--ear-canvas-2);
+    /* SILENT state: MIL is present. Border color is the entire walk-in beat. */
+    --ear-room-state: var(--ear-level-silent);
+    border: 2px solid var(--ear-room-state);
+    box-shadow: var(--ear-glow-silent);
+    transition: border-color 400ms var(--ear-ease-glide), box-shadow 400ms var(--ear-ease-glide);
+    animation: breathe var(--ear-dur-breathe) ease-in-out infinite;
+    overflow: hidden;
+  }
+  @keyframes breathe { 0%,100% { box-shadow: var(--ear-glow-silent); } 50% { box-shadow: 0 0 28px rgba(255,77,109,.5), 0 0 70px rgba(255,77,109,.2); } }
+  .room-plan .wall {
+    position: absolute; background: var(--ear-line); border-radius: 2px;
+  }
+  .room-name {
+    position: absolute; top: var(--ear-s2); left: var(--ear-s3);
+    font-size: var(--ear-fs-caption); color: var(--ear-text-dim);
+  }
+  .room-state-tag {
+    position: absolute; top: var(--ear-s2); right: var(--ear-s3);
+    font-family: var(--ear-font-mono); font-size: var(--ear-fs-micro); font-weight: 600;
+    letter-spacing: .12em; color: var(--ear-level-silent);
+  }
+  .avatar {
+    position: absolute; width: 40px; height: 40px; border-radius: var(--ear-r-pill);
+    background: var(--ear-surface-3); border: 2px solid var(--ear-line-strong);
+    display: flex; align-items: center; justify-content: center;
+    font-size: var(--ear-fs-caption); font-weight: 700; color: var(--ear-text-dim);
+    transition: left var(--ear-dur-glide) var(--ear-ease-glide), top var(--ear-dur-glide) var(--ear-ease-glide);
+  }
+  .avatar .nm {
+    position: absolute; top: 44px; left: 50%; transform: translateX(-50%);
+    font-size: var(--ear-fs-micro); font-family: var(--ear-font-mono);
+    color: var(--ear-text-dim); white-space: nowrap; font-weight: 400; letter-spacing: 0;
+  }
+  .avatar.speaker { border-color: var(--ear-room-state); box-shadow: var(--ear-glow-silent); color: var(--ear-text); }
+  .avatar.arriving { border-color: var(--ear-presence); box-shadow: var(--ear-glow-presence); }
+  .avatar.arriving::after { /* the one-time arrival pulse */
+    content: ""; position: absolute; inset: -6px; border-radius: var(--ear-r-pill);
+    border: 2px solid var(--ear-presence);
+    animation: arrival 1.6s var(--ear-ease-glide) 1 forwards;
+  }
+  @keyframes arrival { from { transform: scale(.7); opacity: 1; } to { transform: scale(1.8); opacity: 0; } }
+  .avatar.lowconf { border-style: dashed; border-color: var(--ear-lowconf); }
+  .avatar.lowconf .q {
+    position: absolute; bottom: -4px; right: -4px; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--ear-lowconf); color: #000;
+    font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+
+  .presence-row {
+    display: flex; align-items: center; gap: var(--ear-s3);
+    padding: var(--ear-s2) var(--ear-s3); border-radius: var(--ear-r-md);
+    background: var(--ear-surface-2); border: 1px solid var(--ear-line);
+  }
+  .presence-row .who { font-weight: 600; }
+  .presence-row .conf { margin-left: auto; font-family: var(--ear-font-mono); font-size: var(--ear-fs-caption); color: var(--ear-text-faint); }
+  .presence-row .tag { font-family: var(--ear-font-mono); font-size: var(--ear-fs-micro); letter-spacing: .12em; }
+  .tag.spk { color: var(--ear-level-silent); }
+  .tag.lc  { color: var(--ear-lowconf); }
+  .tag.ok  { color: var(--ear-text-faint); }
+
+  /* ---- conversation (CENTER) ---- */
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: var(--ear-s3); flex: 1; }
+  .side {
+    border: 1px solid var(--ear-line); border-radius: var(--ear-r-md);
+    background: var(--ear-surface-2); padding: var(--ear-s4);
+    display: flex; flex-direction: column; gap: var(--ear-s3);
+  }
+  .side.room-side { border-color: var(--ear-level-silent); box-shadow: var(--ear-glow-silent); }
+  .side.phone-side { border-color: var(--ear-line-strong); position: relative; }
+  .side.phone-side::before { /* buzz flash — white is a signal, not a theme */
+    content: ""; position: absolute; inset: -1px; border-radius: var(--ear-r-md);
+    border: 2px solid var(--ear-presence);
+    animation: buzzflash 2.2s ease-out 1 forwards; pointer-events: none;
+  }
+  @keyframes buzzflash { 0% { opacity: .9; } 60% { opacity: .9; } 100% { opacity: 0; } }
+  .utterance {
+    font-size: var(--ear-fs-h2); font-weight: 600; padding: var(--ear-s3);
+    background: var(--ear-surface-3); border-radius: var(--ear-r-md);
+    border-left: 3px solid var(--ear-line-strong);
+  }
+  .answer {
+    padding: var(--ear-s4); border-radius: var(--ear-r-md);
+    background: var(--ear-canvas-2); border: 1px dashed var(--ear-line-strong);
+    color: var(--ear-text-dim); font-size: var(--ear-fs-caption);
+    /* the collapse: this card narrowed from FULL to SILENT */
+    animation: collapse-in 420ms var(--ear-ease-glide) 1;
+    transform-origin: top;
+  }
+  @keyframes collapse-in { from { opacity: 0; transform: scaleY(.6); } to { opacity: 1; transform: scaleY(1); } }
+  .answer .why { color: var(--ear-level-silent); font-weight: 600; }
+  .phone-card {
+    padding: var(--ear-s4); border-radius: var(--ear-r-md);
+    background: var(--ear-canvas-2); border: 1px solid var(--ear-line-strong);
+  }
+  .phone-card h4 { font-size: var(--ear-fs-h2); margin-bottom: var(--ear-s2); }
+  .phone-card .meta { font-family: var(--ear-font-mono); font-size: var(--ear-fs-caption); color: var(--ear-text-faint); }
+  .buzz { display: flex; align-items: center; gap: var(--ear-s2); color: var(--ear-presence); font-size: var(--ear-fs-caption); font-weight: 600; }
+
+  /* ---- inspector (RIGHT) — pipeline, causal order ---- */
+  .pipe { display: flex; flex-direction: column; gap: var(--ear-s2); }
+  .stage {
+    padding: var(--ear-s3); border-radius: var(--ear-r-md);
+    background: var(--ear-surface-2); border: 1px solid var(--ear-line);
+    border-left: 3px solid var(--ear-line-strong);
+    opacity: 0; animation: stage-in 300ms var(--ear-ease-snap) forwards;
+  }
+  .stage:nth-child(1) { animation-delay: .1s; }
+  .stage:nth-child(2) { animation-delay: .3s; }
+  .stage:nth-child(3) { animation-delay: .5s; }
+  .stage:nth-child(4) { animation-delay: .7s; border-left-color: var(--ear-level-silent); box-shadow: var(--ear-glow-silent); }
+  @keyframes stage-in { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+  .stage h5 { font-family: var(--ear-font-mono); font-size: var(--ear-fs-micro); letter-spacing: .12em; color: var(--ear-text-faint); margin-bottom: var(--ear-s1); }
+  .stage p { font-size: var(--ear-fs-caption); color: var(--ear-text-dim); }
+  .stage p b { color: var(--ear-text); }
+  .stage .hash { font-family: var(--ear-font-mono); font-size: var(--ear-fs-micro); color: var(--ear-text-faint); }
+  .rule-cite {
+    padding: var(--ear-s3); border-radius: var(--ear-r-md);
+    border: 1px solid rgba(255,77,109,.4); background: rgba(255,77,109,.06);
+    font-size: var(--ear-fs-caption);
+  }
+  .rule-cite .rn { color: var(--ear-level-silent); font-weight: 700; }
+  .trace { font-family: var(--ear-font-mono); font-size: var(--ear-fs-micro); color: var(--ear-text-faint); }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">EAR<em>SHOT</em></div>
+  <div class="live"><span class="dot"></span><span class="ear-micro">Live</span></div>
+  <span class="chip sim">SIMULATED · presence is simulated + manual toggle</span>
+  <div class="spacer"></div>
+  <div class="latency">decide_disclosure p99 <b>0.006ms</b> · budget 500ms</div>
+  <span class="chip">trace 8f3a…c21d</span>
+</header>
+
+<main>
+  <!-- LEFT · room -->
+  <section class="pane">
+    <div class="pane-title">
+      <span class="ear-micro">Room · living room</span>
+      <span class="chip">wake-word re-sample 14:03:22</span>
+    </div>
+    <div class="room-plan">
+      <span class="room-name">Living Room — Priya's household</span>
+      <span class="room-state-tag">SILENT</span>
+      <div class="wall" style="left:34%;top:0;width:6px;height:100%"></div>
+      <div class="wall" style="left:0;top:52%;width:34%;height:6px"></div>
+      <div class="avatar speaker" style="left:16%;top:60%">P<span class="nm">Priya · speaking · 0.97</span></div>
+      <div class="avatar" style="left:44%;top:66%">A<span class="nm">Arjun · 0.91</span></div>
+      <div class="avatar arriving" style="left:70%;top:30%">M<span class="nm">Meera (MIL) · arrived · 0.88</span></div>
+      <div class="avatar lowconf" style="left:12%;top:18%">R<span class="q">?</span><span class="nm">guest · 0.42</span></div>
+    </div>
+    <div class="presence-row"><span class="who">Priya</span><span class="tag spk">SPEAKING</span><span class="conf">0.97</span></div>
+    <div class="presence-row"><span class="who">Arjun</span><span class="tag ok">PRESENT</span><span class="conf">0.91</span></div>
+    <div class="presence-row"><span class="who">Meera · mother-in-law</span><span class="tag spk">ARRIVED</span><span class="conf">0.88</span></div>
+    <div class="presence-row"><span class="who">Unidentified guest</span><span class="tag lc">LOW-CONF</span><span class="conf" style="color:var(--ear-lowconf)">0.42 → lockdown</span></div>
+  </section>
+
+  <!-- CENTER · conversation: room vs phone -->
+  <section class="pane">
+    <div class="pane-title"><span class="ear-micro">Conversation</span><span class="trace">monotonic-downward: voice narrows, never widens</span></div>
+    <div class="duo">
+      <div class="side room-side">
+        <span class="ear-micro">What the room hears</span>
+        <div class="utterance">"Alexa, what's my day?"</div>
+        <div class="answer">
+          <span class="why">—</span> one private item was withheld.<br>
+          Sent to your phone instead.<br><br>
+          <span class="trace">level SILENT · rule "never mention the clinic in front of Mom"</span>
+        </div>
+      </div>
+      <div class="side phone-side">
+        <span class="ear-micro">What your phone got · simulated second channel</span>
+        <div class="buzz">◉ buzz — private nudge</div>
+        <div class="phone-card">
+          <h4>Prenatal visit — City Clinic</h4>
+          <div class="meta">Tue 3:40 PM · Dr. Rao · bring reports<br>withheld from room · hash a91f…e7</div>
+        </div>
+        <span class="trace">SILENT pairs with a private nudge — never a dead end (P0-2)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT · inspector pipeline -->
+  <section class="pane">
+    <div class="pane-title"><span class="ear-micro">Lattice inspector</span><span class="trace">decide_disclosure</span></div>
+    <div class="pipe">
+      <div class="stage"><h5>1 · wake-word</h5><p>"Alexa" detected → <b>fresh presence re-sample</b> before any disclosure (P0-1)</p></div>
+      <div class="stage"><h5>2 · snapshot</h5><p><b>4 people</b> in room · confidences 0.97 / 0.91 / 0.88 / 0.42<br><span class="hash">snapshot 14:03:22 · snap#4471</span></p></div>
+      <div class="stage"><h5>3 · policy</h5><p>deny-first · audience risk HIGH<br>winning rule: <b>"never mention the clinic in front of Mom"</b></p></div>
+      <div class="stage"><h5>4 · level</h5><p style="color:var(--ear-level-silent);font-weight:700;font-size:var(--ear-fs-h2)">SILENT</p><p>withheld from voice · nudged to phone<br><span class="hash">0.006ms · no AI in the hot path</span></p></div>
+    </div>
+    <div class="rule-cite">
+      <span class="rn">Rule cited by name</span> — "never mention the clinic in front of Mom"<br>
+      <span style="color:var(--ear-text-dim)">"Alexa, why didn't you tell me about the appointment?" → answered from the hash-chained ledger, not from memory.</span>
+    </div>
+  </section>
+</main>
+</body>
+</html>

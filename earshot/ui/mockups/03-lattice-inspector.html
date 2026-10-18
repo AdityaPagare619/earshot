@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EARSHOT — Lattice inspector (reference mockup c)</title>
+<!-- REFERENCE STOLEN: network-ops status walls — one color per state, cards in causal
+     order, staggered reveal (general NOC grammar; no single image saved — see REFERENCES.md).
+     Anti-reference: rejected-dribbble-clutter.png (glow without meaning).
+     The 0:45 lattice-grid beat + 1:30 explain-silence beat. All --ear-* tokens. -->
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--ear-canvas); color: var(--ear-text);
+    font-family: var(--ear-font-sans); font-size: var(--ear-fs-body);
+    padding: var(--ear-s6); display: flex; justify-content: center;
+  }
+  .wrap { width: min(1180px, 100%); display: flex; flex-direction: column; gap: var(--ear-s6); }
+  .head { display: flex; align-items: baseline; gap: var(--ear-s4); }
+  .head h1 { font-size: var(--ear-fs-display); font-weight: 700; letter-spacing: -.01em; }
+  .head .trace { font-family: var(--ear-font-mono); font-size: var(--ear-fs-caption); color: var(--ear-text-faint); }
+
+  /* ---- pipeline: causal order, staggered ---- */
+  .pipeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--ear-s3); }
+  .card {
+    background: var(--ear-surface); border: 1px solid var(--ear-line);
+    border-radius: var(--ear-r-md); padding: var(--ear-s4);
+    border-top: 3px solid var(--ear-line-strong);
+    opacity: 0; transform: translateY(12px);
+    animation: rise 320ms var(--ear-ease-snap) forwards;
+  }
+  .card:nth-child(1) { animation-delay: .05s; }
+  .card:nth-child(2) { animation-delay: .25s; }
+  .card:nth-child(3) { animation-delay: .45s; }
+  .card:nth-child(4) { animation-delay: .65s; border-top-color: var(--ear-level-silent); box-shadow: var(--ear-glow-silent); }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+  .card .k { font-family: var(--ear-font-mono); font-size: var(--ear-fs-micro); letter-spacing: .12em; color: var(--ear-text-faint); margin-bottom: var(--ear-s2); }
+  .card h3 { font-size: var(--ear-fs-h2); margin-bottom: var(--ear-s1); }
+  .card p { font-size: var(--ear-fs-caption); color: var(--ear-text-dim); }
+  .card p b { color: var(--ear-text); }
+  .card .mono { font-family: var(--ear-font-mono); font-size: var(--ear-fs-micro); color: var(--ear-text-faint); margin-top: var(--ear-s2); display: block; }
+  .level-word { font-size: var(--ear-fs-h1); font-weight: 700; color: var(--ear-level-silent); }
+  .arrow { align-self: center; color: var(--ear-text-faint); font-size: 20px; }
+
+  /* ---- four-room lattice grid: same payload, four rooms ---- */
+  .payload {
+    font-family: var(--ear-font-mono); font-size: var(--ear-fs-caption); color: var(--ear-text-dim);
+    background: var(--ear-canvas-2); border: 1px solid var(--ear-line);
+    border-radius: var(--ear-r-md); padding: var(--ear-s3) var(--ear-s4);
+  }
+  .payload b { color: var(--ear-text); }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--ear-s3); }
+  .cell {
+    background: var(--ear-canvas-2); border-radius: var(--ear-r-lg);
+    padding: var(--ear-s4); min-height: 190px;
+    display: flex; flex-direction: column; gap: var(--ear-s2);
+    border: 2px solid;
+  }
+  .cell .who { font-size: var(--ear-fs-caption); color: var(--ear-text-dim); }
+  .cell .lvl { font-size: var(--ear-fs-h1); font-weight: 700; }
+  .cell .why { font-size: var(--ear-fs-caption); color: var(--ear-text-dim); flex: 1; }
+  .cell .tr { font-family: var(--ear-font-mono); font-size: var(--ear-fs-micro); color: var(--ear-text-faint); }
+  .cell.full      { border-color: var(--ear-level-full);      box-shadow: var(--ear-glow-full); }
+  .cell.full .lvl { color: var(--ear-level-full); }
+  .cell.abstract      { border-color: var(--ear-level-abstract);      box-shadow: var(--ear-glow-abstract); }
+  .cell.abstract .lvl { color: var(--ear-level-abstract); }
+  .cell.existence      { border-color: var(--ear-level-existence);      box-shadow: var(--ear-glow-existence); }
+  .cell.existence .lvl { color: var(--ear-level-existence); }
+  .cell.silent      { border-color: var(--ear-level-silent);      box-shadow: var(--ear-glow-silent); }
+  .cell.silent .lvl { color: var(--ear-level-silent); }
+
+  /* ---- explain-silence: the mic-drop card ---- */
+  .explain {
+    border: 1px solid rgba(139,124,255,.4); border-radius: var(--ear-r-lg);
+    background: linear-gradient(180deg, rgba(139,124,255,.07), transparent);
+    padding: var(--ear-s6); display: flex; flex-direction: column; gap: var(--ear-s3);
+  }
+  .explain .q { font-size: var(--ear-fs-h1); font-weight: 600; }
+  .explain .a { font-size: var(--ear-fs-body); color: var(--ear-text-dim); max-width: 760px; }
+  .explain .a b { color: var(--ear-text); }
+  .explain .rule { font-family: var(--ear-font-mono); font-size: var(--ear-fs-caption); color: var(--ear-level-existence); }
+  .explain .chain { font-family: var(--ear-font-mono); font-size: var(--ear-fs-micro); color: var(--ear-text-faint); }
+
+  .section-label { display: flex; align-items: center; gap: var(--ear-s3); }
+  .chip {
+    font-family: var(--ear-font-mono); font-size: var(--ear-fs-micro);
+    padding: var(--ear-s1) var(--ear-s2); border: 1px solid var(--ear-line-strong);
+    border-radius: var(--ear-r-sm); color: var(--ear-text-faint);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>Lattice inspector</h1>
+    <span class="trace">decide_disclosure · policy before model · 0.006ms</span>
+  </div>
+
+  <div class="section-label"><span class="ear-micro">Pipeline · causal order</span><span class="chip">cards animate wake-word → snapshot → policy → level</span></div>
+  <div class="pipeline">
+    <div class="card"><div class="k">STAGE 1</div><h3>Wake-word</h3><p><b>"Alexa"</b> detected. Every disclosure begins with a <b>fresh presence re-sample</b> — never a cached room.</p><span class="mono">P0-1 · residual leaks → 0</span></div>
+    <div class="card"><div class="k">STAGE 2</div><h3>Snapshot</h3><p>Audience captured: <b>3 identified + 1 low-confidence</b>. Confidence 0.97 / 0.91 / 0.88 / 0.42.</p><span class="mono">snap#4471 · 14:03:22</span></div>
+    <div class="card"><div class="k">STAGE 3</div><h3>Policy</h3><p>Deny-first lattice. Audience risk <b>HIGH</b>. Winning rule: <b>"never mention the clinic in front of Mom"</b> — cited by name.</p><span class="mono">no AI in the hot path</span></div>
+    <div class="card"><div class="k">STAGE 4</div><div class="level-word">SILENT</div><p>Withheld from voice. <b>Private nudge to phone</b> — never a dead end.</p><span class="mono">trace 8f3a…c21d · 0.006ms</span></div>
+  </div>
+
+  <div class="section-label"><span class="ear-micro">The lattice grid · same payload, four rooms</span><span class="chip">the class-limiter, visible in 10s</span></div>
+  <div class="payload">payload → <b>"Prenatal visit — City Clinic, Tue 3:40 PM with Dr. Rao"</b> · topic: health · sensitivity: HIGH</div>
+  <div class="grid">
+    <div class="cell full">
+      <span class="who">Alone — just Priya</span><span class="lvl">FULL</span>
+      <span class="why">Trusted audience. The whole card, read aloud.</span>
+      <span class="tr">risk LOW · 0.006ms</span>
+    </div>
+    <div class="cell abstract">
+      <span class="who">With spouse — Arjun</span><span class="lvl">ABSTRACT</span>
+      <span class="why">"You have a medical appointment Tuesday afternoon." Details stripped.</span>
+      <span class="tr">risk MED · rule R-114 partial</span>
+    </div>
+    <div class="cell existence">
+      <span class="who">With mother-in-law — Meera</span><span class="lvl">EXISTENCE</span>
+      <span class="why">"One private item — sent to your phone." Approve on phone to reveal.</span>
+      <span class="tr">rule "never mention the clinic in front of Mom"</span>
+    </div>
+    <div class="cell silent">
+      <span class="who">Kids' friends over</span><span class="lvl">SILENT</span>
+      <span class="why">Nothing on voice. Private nudge only. When unsure who's listening, assume everyone.</span>
+      <span class="tr">fail-closed · unknown audience</span>
+    </div>
+  </div>
+
+  <div class="section-label"><span class="ear-micro">Explain-your-silence · the mic-drop</span><span class="chip">1:30 video beat</span></div>
+  <div class="explain">
+    <div class="q">"Alexa, why didn't you tell me about the appointment?"</div>
+    <div class="a">"At <b>3:42</b>, <b>two people</b> were in the room, so the detail was withheld under your rule — <b>'never mention the clinic in front of Mom.'</b>"</div>
+    <div class="rule">◈ winning rule cited by name · piped from the engine, not generated</div>
+    <div class="chain">ledger 9c02 → a91f → e7 · hash-chained · undo_last available</div>
+  </div>
+</div>
+</body>
+</html>

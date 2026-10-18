@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EARSHOT — The walk-in (reference mockup b)</title>
+<!-- REFERENCE STOLEN: Lumio — top-down room cells, soft walls, active-room glow outline
+     (ref-lumio-floorplan.png). Avatar badge chips float over the plan (homeassistant.jpg).
+     This is the 0:15 video beat: MIL crosses the threshold, the border shifts mint→rose,
+     the FULL card collapses. All styling via --ear-* tokens. -->
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--ear-canvas); color: var(--ear-text);
+    font-family: var(--ear-font-sans); font-size: var(--ear-fs-body);
+    display: flex; flex-direction: column; align-items: center;
+    padding: var(--ear-s6); gap: var(--ear-s4);
+  }
+  .stage-wrap { width: min(1180px, 100%); display: flex; flex-direction: column; gap: var(--ear-s4); }
+  .caption { text-align: center; color: var(--ear-text-dim); font-size: var(--ear-fs-caption); max-width: 640px; margin: 0 auto; }
+  .caption b { color: var(--ear-text); }
+
+  /* ---- the plan ---- */
+  .plan {
+    position: relative; height: 520px; border-radius: var(--ear-r-xl);
+    background: var(--ear-canvas-2); border: 1px solid var(--ear-line);
+    overflow: hidden;
+  }
+  .vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 45% 45%, transparent 55%, var(--ear-veil) 100%); pointer-events: none; }
+
+  /* the living room: the border IS the disclosure state */
+  .room {
+    position: absolute; left: 26%; top: 12%; width: 48%; height: 76%;
+    border-radius: var(--ear-r-lg);
+    /* walk-in transition: mint (FULL) → rose (SILENT), 400ms, then hold + breathe */
+    --ear-room-state: var(--ear-level-full);
+    border: 3px solid var(--ear-room-state);
+    box-shadow: var(--ear-glow-full);
+    animation: walkin 9s var(--ear-ease-glide) infinite;
+  }
+  @keyframes walkin {
+    0%, 32%  { border-color: var(--ear-level-full);   box-shadow: var(--ear-glow-full); }
+    38%, 88% { border-color: var(--ear-level-silent); box-shadow: var(--ear-glow-silent); }
+    94%,100% { border-color: var(--ear-level-full);   box-shadow: var(--ear-glow-full); }
+  }
+  .room .doorway {
+    position: absolute; right: -3px; top: 34%; width: 10px; height: 64px;
+    background: var(--ear-canvas-2); border-radius: 4px;
+  }
+  .room .rlab {
+    position: absolute; top: var(--ear-s3); left: var(--ear-s4);
+    font-size: var(--ear-fs-h2); font-weight: 600;
+  }
+  .room .rstate {
+    position: absolute; top: var(--ear-s4); right: var(--ear-s4);
+    font-family: var(--ear-font-mono); font-size: var(--ear-fs-micro); font-weight: 600; letter-spacing: .12em;
+    animation: rstate 9s linear infinite;
+  }
+  @keyframes rstate {
+    0%, 32%  { color: var(--ear-level-full); }   0%,32% { content: "FULL"; }
+    38%, 88% { color: var(--ear-level-silent); }
+    94%,100% { color: var(--ear-level-full); }
+  }
+  .rstate::after { content: "FULL"; animation: rstatetxt 9s linear infinite; }
+  @keyframes rstatetxt { 0%,32% { content: "FULL"; } 38%,88% { content: "SILENT"; } 94%,100% { content: "FULL"; } }
+
+  /* furniture hints — quiet, never competing with avatars */
+  .furn { position: absolute; background: var(--ear-surface-3); border-radius: var(--ear-r-md); opacity: .8; }
+  .sofa { left: 8%; bottom: 10%; width: 22%; height: 14%; }
+  .table { left: 34%; bottom: 34%; width: 12%; height: 9%; border-radius: 50%; }
+  .shelf { left: 62%; top: 6%; width: 24%; height: 6%; }
+
+  .hall { position: absolute; right: 4%; top: 12%; width: 18%; height: 76%; border-radius: var(--ear-r-lg); border: 1px dashed var(--ear-line-strong); }
+  .hall span { position: absolute; top: var(--ear-s3); left: var(--ear-s4); font-size: var(--ear-fs-caption); color: var(--ear-text-faint); }
+
+  /* ---- avatars: they GLIDE, never pop ---- */
+  .avatar {
+    position: absolute; width: 52px; height: 52px; border-radius: var(--ear-r-pill);
+    background: var(--ear-surface-3); border: 2px solid var(--ear-line-strong);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: var(--ear-text-dim); z-index: 2;
+  }
+  .avatar .nm {
+    position: absolute; top: 56px; left: 50%; transform: translateX(-50%);
+    font-family: var(--ear-font-mono); font-size: var(--ear-fs-micro);
+    color: var(--ear-text-dim); white-space: nowrap;
+  }
+  .avatar .nm b { color: var(--ear-text); font-weight: 600; }
+  .avatar.speaker { border-color: var(--ear-level-full); color: var(--ear-text); box-shadow: var(--ear-glow-full); }
+  .avatar.plain { border-color: var(--ear-line-strong); }
+  /* Meera: walks the doorway on a 9s loop */
+  .avatar.mil {
+    border-color: var(--ear-presence); color: var(--ear-text);
+    animation: cross 9s var(--ear-ease-glide) infinite;
+  }
+  @keyframes cross {
+    0%   { left: 88%; top: 40%; box-shadow: none; }
+    30%  { left: 88%; top: 40%; box-shadow: none; }
+    38%  { left: 66%; top: 40%; box-shadow: var(--ear-glow-presence); } /* crossing: arrival pulse */
+    60%  { left: 58%; top: 46%; box-shadow: none; }
+    88%  { left: 58%; top: 46%; box-shadow: none; }
+    100% { left: 88%; top: 40%; box-shadow: none; }
+  }
+  .avatar.mil::after {
+    content: ""; position: absolute; inset: -8px; border-radius: var(--ear-r-pill);
+    border: 2px solid var(--ear-presence); opacity: 0;
+    animation: arrival 9s var(--ear-ease-glide) infinite;
+  }
+  @keyframes arrival {
+    0%, 34%  { opacity: 0; transform: scale(.7); }
+    38%      { opacity: 1; transform: scale(.7); }
+    46%      { opacity: 0; transform: scale(1.9); }
+    100%     { opacity: 0; transform: scale(1.9); }
+  }
+
+  /* ---- event strip: the causal beat, bottom ---- */
+  .events {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--ear-s3);
+  }
+  .ev {
+    background: var(--ear-surface); border: 1px solid var(--ear-line);
+    border-radius: var(--ear-r-md); padding: var(--ear-s3);
+  }
+  .ev .t { font-family: var(--ear-font-mono); font-size: var(--ear-fs-micro); color: var(--ear-text-faint); margin-bottom: var(--ear-s1); }
+  .ev p { font-size: var(--ear-fs-caption); color: var(--ear-text-dim); }
+  .ev p b { color: var(--ear-text); }
+  .ev.e1 { border-left: 3px solid var(--ear-level-full); }
+  .ev.e2 { border-left: 3px solid var(--ear-presence); }
+  .ev.e3 { border-left: 3px solid var(--ear-level-silent); }
+  .ev.e4 { border-left: 3px solid var(--ear-level-existence); }
+
+  .badge-row { display: flex; gap: var(--ear-s2); justify-content: center; }
+  .badge-row .chip { color: var(--ear-text-faint); }
+  .chip {
+    font-family: var(--ear-font-mono); font-size: var(--ear-fs-micro);
+    padding: var(--ear-s1) var(--ear-s2); border: 1px solid var(--ear-line-strong);
+    border-radius: var(--ear-r-sm);
+  }
+  .chip.sim { color: var(--ear-level-abstract); border-color: rgba(255,194,75,.35); }
+</style>
+</head>
+<body>
+<div class="stage-wrap">
+  <div class="badge-row">
+    <span class="ear-micro">The walk-in · 0:15 video beat</span>
+    <span class="chip sim">SIMULATED · presence is simulated + manual toggle</span>
+  </div>
+
+  <div class="plan">
+    <div class="room">
+      <div class="doorway"></div>
+      <span class="rlab">Living Room</span>
+      <span class="rstate"></span>
+      <div class="avatar speaker" style="left:12%;top:58%">P<span class="nm"><b>Priya</b> · speaking · 0.97</span></div>
+      <div class="avatar plain" style="left:40%;top:64%">A<span class="nm"><b>Arjun</b> · 0.91</span></div>
+    </div>
+    <div class="hall"><span>Hallway</span></div>
+    <div class="avatar mil">M<span class="nm"><b>Meera · MIL</b> · crossing · 0.88</span></div>
+    <div class="furn sofa"></div><div class="furn table"></div><div class="furn shelf"></div>
+    <div class="vignette"></div>
+  </div>
+
+  <div class="events">
+    <div class="ev e1"><div class="t">14:03:10 · FULL</div><p><b>"Alexa, what's my day?"</b> → FULL card: prenatal visit read aloud. Two people in the room.</p></div>
+    <div class="ev e2"><div class="t">14:03:21 · ARRIVAL</div><p>Meera crosses the threshold. Wake-word triggers <b>fresh presence re-sample</b> (P0-1).</p></div>
+    <div class="ev e3"><div class="t">14:03:22 · SILENT</div><p>Border shifts <b style="color:var(--ear-level-full)">mint → </b><b style="color:var(--ear-level-silent)">rose</b>. Card collapses live: "one private item, sent to your phone."</p></div>
+    <div class="ev e4"><div class="t">14:03:23 · PHONE</div><p><b>Phone buzzes on camera.</b> Existence-level nudge; detail stays off the voice channel.</p></div>
+  </div>
+
+  <p class="caption">The walk-in is <b>visual</b>: avatars glide (never fade-pop), the room border
+  crossfades its disclosure state over 400ms, and the card collapses — the judge reads the
+  entire beat without a word of explanation.</p>
+</div>
+</body>
+</html>

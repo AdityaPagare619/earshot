@@ -1,0 +1,97 @@
+/* EARSHOT design tokens v1.0.0 — machine mirror of TOKENS.md.
+   Downstream lanes: <link rel="stylesheet" href="earshot/ui/tokens.css"> and use
+   the --ear-* names verbatim. Do not fork values into lane files. */
+
+:root {
+  /* 1. neutral scale */
+  --ear-canvas: #050507;
+  --ear-canvas-2: #0A0A10;
+  --ear-surface: #101015;
+  --ear-surface-2: #17171F;
+  --ear-surface-3: #1E1E28;
+  --ear-line: #262633;
+  --ear-line-strong: #343444;
+  --ear-text: #F4F4F7;
+  --ear-text-dim: #A8A8B8;
+  --ear-text-faint: #646472;
+  --ear-veil: rgba(5, 5, 7, .72);
+
+  /* 2. semantic glow palette */
+  --ear-level-full: #34F5A2;
+  --ear-level-abstract: #FFC24B;
+  --ear-level-existence: #8B7CFF;
+  --ear-level-silent: #FF4D6D;
+  --ear-presence: #FFFFFF;
+  --ear-lowconf: #FF8A3D;
+  --ear-approve: #4FD8FF;
+
+  /* 3. glow shadows */
+  --ear-glow-full: 0 0 18px rgba(52,245,162,.32), 0 0 48px rgba(52,245,162,.12);
+  --ear-glow-abstract: 0 0 18px rgba(255,194,75,.32), 0 0 48px rgba(255,194,75,.12);
+  --ear-glow-existence: 0 0 18px rgba(139,124,255,.34), 0 0 48px rgba(139,124,255,.13);
+  --ear-glow-silent: 0 0 18px rgba(255,77,109,.34), 0 0 48px rgba(255,77,109,.13);
+  --ear-glow-presence: 0 0 14px rgba(255,255,255,.45);
+  --ear-glow-lowconf: 0 0 18px rgba(255,138,61,.36), 0 0 48px rgba(255,138,61,.14);
+  --ear-glow-approve: 0 0 18px rgba(79,216,255,.36), 0 0 48px rgba(79,216,255,.14);
+
+  /* 4. room state */
+  --ear-room-state: var(--ear-room-idle);
+  --ear-room-idle: #3A3A48;
+
+  /* 5. type */
+  --ear-font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ear-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --ear-fs-hero: 64px;
+  --ear-fs-display: 34px;
+  --ear-fs-h1: 24px;
+  --ear-fs-h2: 17px;
+  --ear-fs-body: 14px;
+  --ear-fs-caption: 12px;
+  --ear-fs-micro: 10.5px;
+
+  /* 6. spacing & radius */
+  --ear-s1: 4px;
+  --ear-s2: 8px;
+  --ear-s3: 12px;
+  --ear-s4: 16px;
+  --ear-s5: 20px;
+  --ear-s6: 24px;
+  --ear-s8: 32px;
+  --ear-s12: 48px;
+  --ear-gap: 16px;
+  --ear-r-sm: 6px;
+  --ear-r-md: 10px;
+  --ear-r-lg: 16px;
+  --ear-r-xl: 24px;
+  --ear-r-pill: 999px;
+
+  /* 7. motion */
+  --ear-dur-instant: 120ms;
+  --ear-dur-fast: 240ms;
+  --ear-dur-glide: 480ms;
+  --ear-dur-breathe: 2400ms;
+  --ear-ease-glide: cubic-bezier(.22,.8,.24,1);
+  --ear-ease-snap: cubic-bezier(.16,1,.3,1);
+
+  /* 10. layout */
+  --ear-layout-pane-left: 360px;
+  --ear-layout-pane-right: 400px;
+  --ear-maxw: 1560px;
+}
+
+/* shared micro-label style — mono, uppercase, tracked */
+.ear-micro {
+  font-family: var(--ear-font-mono);
+  font-size: var(--ear-fs-micro);
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ear-text-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}

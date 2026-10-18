@@ -74,6 +74,11 @@ notification gating, explain-silence.
   (e.g. "my roommate can't hear about my therapy").
 - [ ] A rule is written LIVE in plain language via the existing `set_rule` tool —
   no new components, no rehearsal. `decide_disclosure` handles it immediately.
+- [ ] Surface: MCP Inspector against the live server
+  (`python -m earshot.server.server --port 8000`, Inspector → Streamable HTTP →
+  `http://127.0.0.1:8000/mcp`). Verified 18 Oct: the verbatim phrasing
+  "my roommate Rohan can't hear about my therapy" parses → enforced →
+  therapy item goes SILENT with Rohan present, FULL alone.
 - [ ] Lattice visibly re-resolves; the point lands: the system expresses
   unanticipated cases, not just rehearsed ones. Answers the judge's "what about X?"
 - [ ] 15 seconds max. If the live call stumbles, the fallback is the same beat

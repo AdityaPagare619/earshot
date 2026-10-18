@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EARSHOT — test gateway (simulator stand-in)</title>
+<style>
+  body { font-family: -apple-system, sans-serif; background: #050607; color: #e8eef4;
+         max-width: 640px; margin: 0 auto; padding: 20px; font-size: 15px; }
+  h1 { font-size: 18px; } .dim { color: #8b98a5; font-size: 13px; }
+  button { display: block; width: 100%; margin: 8px 0; padding: 14px; font-size: 15px;
+           border-radius: 10px; border: 1px solid #1c232c; background: #10141a; color: #e8eef4;
+           cursor: pointer; text-align: left; }
+  button b { color: #22d3ee; }
+  #log { background: #0b0e11; border: 1px solid #1c232c; border-radius: 10px;
+         padding: 12px; font-family: ui-monospace, monospace; font-size: 12px;
+         white-space: pre-wrap; max-height: 320px; overflow: auto; margin-top: 16px; }
+  .ok { color: #34d399; } .bad { color: #f87171; }
+</style>
+</head>
+<body>
+<h1>EARSHOT test gateway <span class="dim">— simulator stand-in · room <b id="room-label">demo</b></span></h1>
+<p class="dim">Open <a href="../index.html" style="color:#22d3ee">the phone page</a> in a second tab
+(same origin!), pair it, then fire scenarios here. This page verifies approval tokens
+exactly like <code>approve()</code> will.</p>
+
+<button id="s-walkin"><b>1 · The walk-in</b> — “Alexa, what's my day?” with MIL present → EXISTENCE withheld card</button>
+<button id="s-silent"><b>2 · SILENT + private nudge</b> — P0-2: silenced item pairs with a phone nudge</button>
+<button id="s-notif"><b>3 · Notification gating</b> — package arrives with guests → phone-only, no announcement</button>
+<button id="s-approval"><b>4 · Approval: reorder detergent ₹12.40</b> — EXISTENCE with a signature</button>
+<button id="s-tamper"><b>5 · Tamper test</b> — verify rejects a token minted over a modified plan</button>
+
+<div id="log"></div>
+
+<script src="../crypto.js"></script>
+<script src="../channel.js"></script>
+<script>
+(function () {
+  var C = EarshotCrypto;
+  var logEl = document.getElementById('log');
+  function log(msg, cls) {
+    var d = document.createElement('div');
+    if (cls) d.className = cls;
+    d.textContent = new Date().toLocaleTimeString() + '  ' + msg;
+    logEl.prepend(d);
+  }
+
+  var room = 'demo';
+  try { var m = /[?&]room=([^&]+)/.exec(location.search); if (m) room = decodeURIComponent(m[1]); } catch (e) {}
+  document.getElementById('room-label').textContent = room;
+
+  var ch = new EarshotChannel({ room: room, backend: 'broadcast' });
+  var store = new Map(); // request_id -> {planHash, expiresAt, consumed}
+
+  ch.start(function (msg) {
+    log('← ' + msg.type + ' ' + JSON.stringify(msg).slice(0, 160));
+    if (msg.type === 'approval_token') {
+      C.verifyApprovalToken({
+        store: store, requestId: msg.request_id, decision: msg.decision,
+        ts: msg.ts, token: msg.token, nowMs: Date.now()
+      }).then(function (res) {
+        log('verify → ' + res.outcome, res.ok ? 'ok' : 'bad');
+        var notes = {
+          executed: 'Detergent reordered — Blinkit, ₹12.40.',
+          denied: 'Order cancelled by approver.',
+          'rejected:expired': 'Token arrived after expiry.',
+          'rejected:replay': 'request_id already consumed.',
+          'rejected:plan_mismatch': 'Plan hash mismatch — plan was altered.',
+          'rejected:unknown': 'Unknown request_id.'
+        };
+        return ch.send({ type: 'approval_result', trace_id: msg.trace_id,
+          ts: Date.now(), request_id: msg.request_id,
+          outcome: res.outcome, note: notes[res.outcome] || '' });
+      });
+    }
+  }).then(function () { log('gateway listening on room "' + room + '"', 'ok'); });
+
+  function base(id) {
+    return { v: 1, id: id, trace_id: 'tr_' + id, ts: Date.now(), room: room };
+  }
+
+  document.getElementById('s-walkin').onclick = function () {
+    ch.send(Object.assign(base('msg_walkin'), { type: 'withheld_card', card: {
+      item_id: 'cal_20261018_prenatal', level: 'EXISTENCE',
+      title: 'One private item', detail: 'Prenatal checkup — City Clinic, 4:30 PM (Dr. Rao)',
+      speaker_heard: 'One private item, sent to your phone.',
+      winning_rule: 'never mention the clinic in front of Mom',
+      reasons: ['audience includes mother-in-law', 'topic=health is HIGH sensitivity'],
+      audience: ['you', 'mother-in-law'], nudge: true } }));
+    log('→ withheld_card (EXISTENCE). Room heard: “one private item, sent to your phone.”', 'ok');
+  };
+
+  document.getElementById('s-silent').onclick = function () {
+    ch.send(Object.assign(base('msg_silent'), { type: 'withheld_card', card: {
+      item_id: 'msg_bank_otp', level: 'SILENT',
+      title: 'Silenced item', detail: 'Bank OTP 482913 — do not read aloud',
+      speaker_heard: '', winning_rule: 'never voice credentials with guests present',
+      reasons: ['topic=credentials is CRITICAL'], audience: ['you', 'guest'], nudge: true } }));
+    log('→ withheld_card (SILENT + nudge). P0-2: never a dead end.', 'ok');
+  };
+
+  document.getElementById('s-notif').onclick = function () {
+    ch.send(Object.assign(base('msg_notif'), { type: 'notification_card', card: {
+      item_id: 'pkg_instax', level: 'EXISTENCE', source: 'package_tracker',
+      title: 'Package delivered', detail: 'Instax Mini 12 delivered to the door.',
+      speaker_heard: '', announcement_suppressed: true,
+      winning_rule: 'deliveries are phone-only when guests are present',
+      reasons: ['unprompted speech', 'guests present'], audience: ['you', 'guest'], nudge: true } }));
+    log('→ notification_card. Speaker stayed silent; phone buzzed.', 'ok');
+  };
+
+  document.getElementById('s-approval').onclick = async function () {
+    var plan = { action: 'reorder', merchant: 'Blinkit',
+      items: [{ name: 'Detergent 1kg', qty: 1 }],
+      amount_cents: 1240, currency: 'INR' };
+    var ph = await C.planHash(plan);
+    var rid = 'apr_' + Math.random().toString(36).slice(2, 8);
+    store.set(rid, { planHash: ph, expiresAt: Date.now() + 120000, consumed: false });
+    ch.send(Object.assign(base('msg_' + rid), { type: 'approval_request',
+      request_id: rid, expires_at: Date.now() + 120000, plan: plan, plan_hash: ph,
+      speaker_heard: 'Reordering detergent — check your phone to confirm.' }));
+    log('→ approval_request ' + rid + ' plan_hash=' + ph.slice(0, 16) + '…', 'ok');
+  };
+
+  // Negative control: token minted over a DIFFERENT plan must be rejected.
+  document.getElementById('s-tamper').onclick = async function () {
+    var plan = { action: 'reorder', merchant: 'Blinkit',
+      items: [{ name: 'Detergent 1kg', qty: 1 }], amount_cents: 1240, currency: 'INR' };
+    var evilPlan = Object.assign({}, plan, { amount_cents: 999900 });
+    var ph = await C.planHash(plan);
+    var evilPh = await C.planHash(evilPlan);
+    var rid = 'apr_tamper';
+    store.set(rid, { planHash: ph, expiresAt: Date.now() + 120000, consumed: false });
+    var ts = Date.now();
+    var evilToken = await C.makeApprovalToken({ planHash: evilPh, requestId: rid, decision: 'approve', ts: ts });
+    var res = await C.verifyApprovalToken({ store: store, requestId: rid,
+      decision: 'approve', ts: ts, token: evilToken, nowMs: Date.now() });
+    log('tamper test → ' + res.outcome + ' (expected rejected:plan_mismatch)',
+        res.outcome === 'rejected:plan_mismatch' ? 'ok' : 'bad');
+  };
+})();
+</script>
+</body>
+</html>

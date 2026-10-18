@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EARSHOT · Inspector — RIGHT pane (simulated)</title>
+<style>
+  :root{
+    --ear-canvas:#050607;--ear-surface:#0b0e11;--ear-line:rgba(255,255,255,.09);
+    --ear-text:#e9eff3;--ear-text-dim:#8b98a3;--ear-font:'Inter',system-ui,sans-serif;
+    --ear-mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--ear-canvas);color:var(--ear-text);font-family:var(--ear-font)}
+  body{display:flex;flex-direction:column}
+  header.top{display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--ear-line)}
+  .brand{font:800 15px/1 var(--ear-font);letter-spacing:.08em}
+  .sim{font:600 10px/1 var(--ear-mono);letter-spacing:.18em;color:var(--ear-canvas);
+    background:var(--ear-text-dim);border-radius:4px;padding:5px 8px}
+  .scen{margin-left:auto;display:flex;gap:8px}
+  .scen button{font:600 11px/1 var(--ear-font);letter-spacing:.08em;color:var(--ear-text);
+    background:var(--ear-surface);border:1px solid var(--ear-line);border-radius:999px;
+    padding:9px 15px;cursor:pointer}
+  .scen button:hover{border-color:var(--ear-text-dim)}
+  main{flex:1;min-height:0;display:flex}
+  earshot-inspector{flex:1;min-width:0;border-left:1px solid var(--ear-line)}
+  .note{padding:8px 18px;border-top:1px solid var(--ear-line);
+    font:400 11px/1.5 var(--ear-mono);color:var(--ear-text-dim)}
+</style>
+</head>
+<body>
+<header class="top">
+  <span class="brand">EARSHOT · INSPECTOR</span>
+  <span class="sim">SIMULATED</span>
+  <div class="scen">
+    <button id="play-walkin">▶ walk-in scenario</button>
+    <button id="show-grid">▦ lattice grid</button>
+  </div>
+</header>
+<main>
+  <earshot-inspector></earshot-inspector>
+</main>
+<div class="note">lane inspector-ui demo · mock payloads mirror worldsim/policy.py Decision contract ·
+  tokens: --ear-* (ui-inspiration contract) · no terminal text in the video path</div>
+<script src="inspector.js"></script>
+<script src="mock-payloads.js"></script>
+<script>
+  document.getElementById("play-walkin").addEventListener("click", function () {
+    window.EarshotMock.play(window.EarshotMock.walkInScenario());
+  });
+  document.getElementById("show-grid").addEventListener("click", function () {
+    window.EarshotBus.emit("grid", window.EarshotMock.latticeGrid());
+    // switch to grid view
+    var el = document.querySelector("earshot-inspector");
+    var tab = el.shadowRoot.querySelector('.tab[data-view="grid"]');
+    if (tab) tab.click();
+  });
+  // auto-play on load so a bare browser open shows the story
+  function init() {
+    window.EarshotBus.emit("grid", window.EarshotMock.latticeGrid());
+    if (location.hash === "#grid") {
+      var el = document.querySelector("earshot-inspector");
+      var tab = el.shadowRoot.querySelector('.tab[data-view="grid"]');
+      if (tab) tab.click();
+      return;
+    }
+    window.EarshotMock.play(window.EarshotMock.walkInScenario());
+  }
+  if (document.readyState === "complete") init();
+  else window.addEventListener("load", init);
+  window.addEventListener("hashchange", init);
+</script>
+</body>
+</html>

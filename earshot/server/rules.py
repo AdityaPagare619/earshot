@@ -32,6 +32,13 @@ _HI_DENY_2 = re.compile(
     r"(.+?)\s+mat\s+(?:batao|bolo|batana|bolna|kaho)\s+(.+?)\s+ke\s+saamne",
     re.IGNORECASE,
 )
+# "my roommate Rohan can't hear about my therapy" -> (my therapy, my roommate Rohan)
+# Founder demo-beat phrasing (unanticipated case, 18 Oct directive): the person
+# phrase resolves to its last token ("rohan") — documented, deterministic.
+_EN_DENY_CANT_HEAR = re.compile(
+    r"(.+?)\s+(?:can'?t|cannot)\s+hear\s+about\s+(.+)",
+    re.IGNORECASE,
+)
 
 
 def _split_names(text):
@@ -42,8 +49,19 @@ def _split_names(text):
 def _clean_topic(text):
     t = text.strip().lower()
     t = re.sub(r"\s+ke\s+baare\s+mein\s*$", "", t)  # "clinic ke baare mein" -> "clinic"
-    t = re.sub(r"^the\s+", "", t)
+    t = re.sub(r"^(the|my)\s+", "", t)
     return t.strip()
+
+
+def _resolve_person(phrase):
+    """Person phrase -> persona id: last alphanumeric token, lowercased.
+
+    "my roommate Rohan" -> "rohan"; "mom" -> "mom". Deterministic, documented;
+    the parsed ids are returned to the caller for confirmation, never guessed
+    silently (an unresolvable name simply never matches an audience id).
+    """
+    toks = re.findall(r"[a-z0-9]+", (phrase or "").lower())
+    return toks[-1] if toks else (phrase or "").strip().lower()
 
 
 def parse_deny_nl(rule_nl):
@@ -58,6 +76,10 @@ def parse_deny_nl(rule_nl):
     m = _HI_DENY_2.search(rule_nl or "")
     if m:
         return [_clean_topic(m.group(1))], _split_names(m.group(2))
+    m = _EN_DENY_CANT_HEAR.search(rule_nl or "")
+    if m:
+        return [_clean_topic(m.group(2))], [
+            _resolve_person(p) for p in _split_names(m.group(1))]
     return None
 
 

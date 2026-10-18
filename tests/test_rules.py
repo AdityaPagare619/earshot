@@ -57,3 +57,26 @@ def test_bad_kind_rejected():
     except ValueError:
         return
     raise AssertionError("expected ValueError")
+
+
+def test_en_cant_hear_pattern_founder_beat():
+    # The founder's unanticipated-case example, verbatim.
+    topics, persons = parse_deny_nl("my roommate Rohan can't hear about my therapy")
+    assert topics == ["therapy"]
+    assert persons == ["rohan"]
+
+
+def test_en_cant_hear_multi_person():
+    topics, persons = parse_deny_nl("Rohan and Priya cannot hear about my bonus")
+    assert topics == ["bonus"]
+    assert persons == ["rohan", "priya"]
+
+
+def test_cant_hear_builds_enforcing_rule():
+    rule, unparsed = build_rule("rule-9", "my roommate Rohan can't hear about my therapy",
+                                "en", "deny", None, None, None, None, None)
+    assert unparsed is None
+    assert rule["parsed"] is True
+    assert rule["topics"] == ["therapy"]
+    assert rule["in_front_of"] == ["rohan"]
+    assert rule["cap"] == "SILENT"

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EARSHOT — second channel</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="phone-shell" id="app">
+  <div class="topbar">
+    <div class="brand"><b>EARSHOT</b> · SECOND CHANNEL</div>
+    <div class="status-chip wait" id="status-chip">not paired</div>
+  </div>
+
+  <div class="pair-row">
+    <input id="room-input" value="demo" maxlength="24" autocomplete="off"
+           placeholder="room code" aria-label="room code">
+    <button class="btn primary" id="pair-btn">Pair phone</button>
+  </div>
+
+  <p class="buzz-line" id="buzz-line">nudge path: <b>not armed</b> — tap “Pair phone”, then “Test buzz”.</p>
+  <div class="btn-row" style="margin-top:0">
+    <button class="btn" id="buzz-btn">Test buzz</button>
+  </div>
+
+  <div id="inbox" style="margin-top:16px">
+    <div class="empty"><span class="big">📵</span>
+      Nothing withheld yet.<br>When the room hears “one private item”,<br>it lands here — with a real buzz.
+    </div>
+  </div>
+
+  <p class="sr-note">EARSHOT demo — simulated gateway. Withheld detail is private to this screen.</p>
+</div>
+
+<script src="crypto.js"></script>
+<script src="channel.js"></script>
+<script src="phone.js"></script>
+<script>
+(function () {
+  var app = new EarshotPhone.PhoneApp(document.getElementById('app'));
+  var roomInput = document.getElementById('room-input');
+  try {
+    var m = /[?&]room=([^&]+)/.exec(location.search);
+    if (m) roomInput.value = decodeURIComponent(m[1]);
+  } catch (e) {}
+  document.getElementById('pair-btn').addEventListener('click', function () {
+    var room = (roomInput.value || 'demo').trim() || 'demo';
+    app.connect(room, 'broadcast').then(function () {
+      document.getElementById('buzz-line').innerHTML =
+        'nudge path: <b>' + EarshotPhone.resolveBuzzPaths(navigator).join(' + ') + '</b> armed';
+    }).catch(function () {});
+  });
+  document.getElementById('buzz-btn').addEventListener('click', function () {
+    var fired = EarshotPhone.fireBuzz(navigator, document.getElementById('inbox'));
+    app.logBuzz(fired);
+  });
+})();
+</script>
+</body>
+</html>

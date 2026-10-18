@@ -53,7 +53,7 @@ notification gating, explain-silence.
   Mom.'"*
 - Depends on: notify-ledger lane (explain_withholding pipes reasons through).
 
-## Shot 7 — Architecture (1:50–2:15) [NEVER CUT]
+## Shot 7 — Architecture (1:50–2:00) [NEVER CUT]
 - [ ] Gateway BEFORE the model diagram: "Alexa can't leak what it was never told."
 - [ ] Measured number on screen: decision p99 = **0.006 ms** (80,000× under the
   500 ms budget). No AI in the hot path.
@@ -62,22 +62,33 @@ notification gating, explain-silence.
 - [ ] Apple HomeView line: *"Apple just validated the trunk with face-scoped
   disclosure. We handle the people the camera doesn't know."*
 
-## Shot 8 — Proof it works (2:15–2:45) [NEVER CUT]
+## Shot 8 — Proof it works (2:00–2:30) [NEVER CUT]
 - [ ] World-sim numbers: 3,000 personas, 777 households → 42.4% → **0 leaks**
   after the wake-word fix.
-- [ ] Pre-flight-lite grades the repo live — our own cert harness, final 15s.
+- [ ] Pre-flight-lite grades the repo live — our own cert harness.
 - Depends on: preflight lane (video-ready 15s run). If preflight slips, substitute
   the static results graphic — do NOT drop the beat.
+
+## Shot 8b — The unanticipated case (2:30–2:45) [NEVER CUT — founder directive 18 Oct]
+- [ ] On camera, an unrehearsed broadcast-privacy problem is named
+  (e.g. "my roommate can't hear about my therapy").
+- [ ] A rule is written LIVE in plain language via the existing `set_rule` tool —
+  no new components, no rehearsal. `decide_disclosure` handles it immediately.
+- [ ] Lattice visibly re-resolves; the point lands: the system expresses
+  unanticipated cases, not just rehearsed ones. Answers the judge's "what about X?"
+- [ ] 15 seconds max. If the live call stumbles, the fallback is the same beat
+  with the rule pre-typed but still executed live — never a mock.
 
 ## Shot 9 — The one-liner (2:45–3:00) [NEVER CUT]
 - [ ] *"Alexa answers the person, but it speaks to the room."*
 - [ ] End card: repo URL + MIT.
 
-## Triage / cut order (founder-approved)
+## Triage / cut order (founder-approved, 18 Oct directive)
 1. Shrink re-disclosure (memory re-scope detail).
 2. Shrink the language beat (Shot 5).
-3. Protect in this order: walk-in → lattice grid → notification gating →
-   explain-silence → phone buzz → 42.4% number.
+3. Cut phone-approval detail if time presses.
+4. Protect in this order: walk-in → lattice grid → notification gating →
+   explain-silence → phone buzz → 42.4% number → unanticipated-case beat.
 
 ## General shoot rules
 - Re-shoot beats in sequence 2→4→6→7→8 (the dependency-heavy beats) before

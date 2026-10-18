@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EARSHOT — Simulator Mission Control (SIMULATED)</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ══════════ TOP BAR ══════════ -->
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">◉</span>
+    <div>
+      <div class="brand-name">EARSHOT</div>
+      <div class="brand-sub">SIMULATOR MISSION CONTROL · <span class="sim-tag">SIMULATED — no real Alexa device, no camera feed</span></div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span id="server-badge" class="badge badge-mock" title="Transport to the MCP server">MOCK MODE</span>
+    <span id="resample-stamp" class="stamp" title="Last wake-word presence re-sample">re-sample: —</span>
+    <button id="btn-wakeword" class="wakeword-btn" title="Force a fresh presence re-sample before the next disclosure (P0-1)">🎙 WAKE WORD</button>
+  </div>
+</header>
+
+<!-- ══════════ THREE PANES ══════════ -->
+<main class="panes">
+
+  <!-- LEFT: room (shell owns chrome + presence panel; room-viz lane renders into #mount-room) -->
+  <section class="pane pane-left" id="pane-left" data-disclosure="full">
+    <div class="pane-head">
+      <h2>ROOM</h2>
+      <span class="pane-tag">LEFT · room-viz lane mounts below</span>
+    </div>
+
+    <div class="presence-panel">
+      <div class="presence-title">SIMULATED PRESENCE CONTROL
+        <span class="sim-tag">manual — not a camera feed</span>
+      </div>
+      <div id="presence-list" class="presence-list"><!-- person rows injected --></div>
+      <div class="presence-note">confidence &lt; 0.6 fails closed → treated as present (P0)</div>
+    </div>
+
+    <div id="mount-room" class="mount mount-room">
+      <div class="mount-placeholder">
+        <div class="mount-placeholder-title">ROOM-VIZ MOUNT</div>
+        <div class="mount-placeholder-sub">lane 5 renders the live floor-plan here.<br>Subscribe to <code>presence.snapshot</code> / <code>disclosure.decision</code> on <code>window.EarshotBus</code>.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CENTER: conversation (owned by this shell) -->
+  <section class="pane pane-center">
+    <div class="pane-head">
+      <h2>CONVERSATION</h2>
+      <span class="pane-tag">CENTER · speaker hears vs phone receives</span>
+    </div>
+
+    <div class="chat-toolbar">
+      <button id="btn-scenario" class="scenario-btn">▶ Play walk-in: FULL → EXISTENCE</button>
+      <span class="toolbar-hint">scripted Priya-household demo turn</span>
+    </div>
+
+    <div id="chat-log" class="chat-log">
+      <div class="chat-empty">
+        Press <b>▶ Play walk-in</b> or type below.<br>
+        Every disclosure fires a wake-word re-sample first (P0-1).
+      </div>
+    </div>
+
+    <div class="chat-input-row">
+      <input id="utterance" class="utterance" type="text" placeholder='Say something — e.g. "Alexa, what\'s my day?"' autocomplete="off">
+      <button id="btn-ask" class="ask-btn">ASK</button>
+    </div>
+    <div id="bus-ticker" class="bus-ticker">bus: ready</div>
+  </section>
+
+  <!-- RIGHT: inspector (inspector-ui lane renders into #mount-inspector) -->
+  <section class="pane pane-right">
+    <div class="pane-head">
+      <h2>INSPECTOR</h2>
+      <span class="pane-tag">RIGHT · inspector-ui lane mounts below</span>
+    </div>
+
+    <div class="lattice-strip" id="lattice-strip">
+      <div class="lattice-step" data-step="wake">WAKE</div>
+      <div class="lattice-arrow">→</div>
+      <div class="lattice-step" data-step="snap">SNAPSHOT</div>
+      <div class="lattice-arrow">→</div>
+      <div class="lattice-step" data-step="policy">POLICY</div>
+      <div class="lattice-arrow">→</div>
+      <div class="lattice-step" id="lattice-level" data-step="level">LEVEL: —</div>
+    </div>
+
+    <div id="mount-inspector" class="mount mount-inspector">
+      <div class="mount-placeholder">
+        <div class="mount-placeholder-title">INSPECTOR MOUNT</div>
+        <div class="mount-placeholder-sub">lane 6 renders the lattice pipeline + tool-call cards here.<br>Subscribe to <code>tool.call</code> / <code>wakeword.resample</code> / <code>disclosure.decision</code> on <code>window.EarshotBus</code>.</div>
+      </div>
+    </div>
+
+    <div class="tool-trace" id="tool-trace">
+      <div class="tool-trace-title">TOOL TRACE <span class="sim-tag">simulated</span></div>
+      <div id="tool-trace-list" class="tool-trace-list"><div class="trace-empty">no tool calls yet</div></div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>EARSHOT simulator shell · lane <b>simulator-shell</b> · transport: <span id="transport-name">mock</span></span>
+  <span class="foot-right">all presence + audio simulated · phone pane = browser stand-in for the second channel</span>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
